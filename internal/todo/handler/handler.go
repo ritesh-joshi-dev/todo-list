@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"todo-list/internal/todo/auth"
 	"todo-list/internal/todo/model"
 	"todo-list/internal/todo/service"
 )
@@ -77,4 +78,21 @@ func PendingTask(w http.ResponseWriter, r *http.Request) {
 	res := service.PendingTask()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
+}
+
+func GenerateToken(w http.ResponseWriter, r *http.Request) {
+	// In production, you'd validate a real user from DB
+	userID := r.FormValue("user_id")
+	if userID == "" {
+		http.Error(w, "Missing user_id", http.StatusBadRequest)
+		return
+	}
+
+	token, err := auth.GenerateJWT(userID)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

@@ -1,16 +1,21 @@
 package todo
 
 import (
+	"net/http"
+	"todo-list/internal/todo/auth"
 	"todo-list/internal/todo/handler"
 
 	"github.com/gorilla/mux"
 )
 
 func RegisterHandlers(router *mux.Router) {
-	router.HandleFunc("/api/todo/create", handler.CreateTask).Methods("POST")
-	router.HandleFunc("/api/todo/get", handler.GetTask).Methods("GET")
-	router.HandleFunc("/api/todo/getAll", handler.GetAllTask).Methods("GET")
-	router.HandleFunc("/api/todo/update", handler.UpdateTask).Methods("POST")
-	router.HandleFunc("/api/todo/completed", handler.CompletedTask).Methods("GET")
-	router.HandleFunc("/api/todo/pending", handler.PendingTask).Methods("GET")
+	router.Handle("/api/todo/create", auth.AuthenticateMiddleware(http.HandlerFunc(handler.CreateTask))).Methods("POST")
+	router.Handle("/api/todo/get", auth.AuthenticateMiddleware(http.HandlerFunc(handler.GetTask))).Methods("GET")
+	router.Handle("/api/todo/getAll", auth.AuthenticateMiddleware(http.HandlerFunc(handler.GetAllTask))).Methods("GET")
+	router.Handle("/api/todo/update", auth.AuthenticateMiddleware(http.HandlerFunc(handler.UpdateTask))).Methods("POST")
+	router.Handle("/api/todo/completed", auth.AuthenticateMiddleware(http.HandlerFunc(handler.CompletedTask))).Methods("GET")
+	router.Handle("/api/todo/pending", auth.AuthenticateMiddleware(http.HandlerFunc(handler.PendingTask))).Methods("GET")
+
+	// Optionally add an auth route to get token
+	router.HandleFunc("/api/login", handler.GenerateToken).Methods("POST")
 }
